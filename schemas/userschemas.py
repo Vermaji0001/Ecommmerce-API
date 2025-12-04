@@ -38,3 +38,11 @@ class ProductCreateSchemas(BaseModel):
     mrp:int
     discount:int
       
+class OtpSentSchemas(BaseModel):
+    email:str
+
+
+class ResetPasswordSchemas(BaseModel):
+    email:str
+    otp:int
+    new_password:str

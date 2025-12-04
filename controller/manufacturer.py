@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from modals.usermodal import Manufacturer,Category,Brand
+from modals.usermodal import Manufacturer,Category,Brand,Product
 from datetime import datetime,timedelta
 from utils.function import hash_password
 from utils.function import authanticate_manufacturer,create_tokens,EXPIRY_MINUTES
@@ -55,7 +55,7 @@ def product_create(data,db:Session):
            raise HTTPException (status_code=404,detail="Manufacturer id not match")
       discount_rupees=data.mrp*data.discount/100
       saleprice=data.mrp-discount_rupees
-      manufact=Manufacturer(manufacturer_id=data.manufacturer_id,
+      manufact=Product(manufacturer_id=data.manufacturer_id,
                             product_name=data.product_name,
                             product_type=data.product_type,
                             category=data.category,
@@ -63,18 +63,21 @@ def product_create(data,db:Session):
                             mrp=data.mrp,
                             discount=data.discount,
                             sale_price=saleprice)
-      db.add()(manufact)
+      db.add(manufact)
       db.commit()
-      db.refresh(manufact)
-      xyz=Category(catergory_name=data.category)
-      db.add(xyz)
-      db.commit()
-      db.refresh(xyz)
-      new=Brand(brand_name=data.brand)
-      db.add(new)
-      db.commit()
-      db.refresh(new)
-      return {"msg":f"Product create id {manufacturer.id} and  product name is {data.product_name}"}
+      category=db.query(Category).filter(Category.category_name==data.category).first()
+      if not category:
+           xyz=Category(category_name=data.category)
+           db.add(xyz)
+           db.commit()
+           db.refresh(xyz)
+      brand=db.query(Brand).filter(Brand.brand_name==data.brand).first()  
+      if not brand :
+            new=Brand(brand_name=data.brand)
+            db.add(new)
+            db.commit()
+            db.refresh(new)
+      return {"msg":"Product create "}
 
 
 

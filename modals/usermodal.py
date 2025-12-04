@@ -51,4 +51,16 @@ class Product(base):
     mrp=Column(Integer,nullable=False)
     discount=Column(Integer,nullable=False)
     sale_price=Column(Integer,nullable=True)
+
+
+
+class Otp(base):
+    __tablename__="otp"
+    id=Column(Integer,primary_key=True)
+    email=Column(String(200),nullable=False)
+    otp=Column(Integer,nullable=False)
+    
+
+
+
          
