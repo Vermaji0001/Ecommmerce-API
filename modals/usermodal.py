@@ -47,9 +47,10 @@ class Product(base):
     product_name=Column(String(200),nullable=False)
     product_type=Column(String(200),nullable=False)
     category=Column(String(200),nullable=False)
+    product_quantity=Column(Integer,nullable=False)
     brand=Column(String(200),nullable=False)
     mrp=Column(Integer,nullable=False)
-    discount=Column(Integer,nullable=False)
+    discount_percentage=Column(Integer,nullable=False)
     sale_price=Column(Integer,nullable=True)
 
 
@@ -61,6 +62,42 @@ class Otp(base):
     otp=Column(Integer,nullable=False)
     
 
+class AddToCart(base):
+    __tablename__="addTocart"
+    id=Column(Integer,primary_key=True)
+    coustomer_id=Column(Integer,nullable=False)
+    product_id=Column(Integer,nullable=False)
+    product_quantity=Column(Integer,nullable=False)
 
 
-         
+# class ProductPayment(base):
+#     id=Column(Integer,primary_key=True)
+#     coustomer_id=Column(Integer,nullable=False)
+#     Product_id=Column(Integer,nullable=False)
+#     total_payment=Column(Integer,nullable=True)
+#     payment_status=Column(String(20),nullable=True)
+
+
+
+class OrderPlaced(base):
+    __tablename__="Oderpalced"
+    id=Column(Integer,primary_key=True)
+    coustomer_id=Column(Integer,nullable=False)
+    product_id=Column(Integer,nullable=True)
+    product_name=Column(String(200),nullable=True)
+    product_quantity=Column(Integer,nullable=True)
+    payment_mode=Column(String(200),nullable=False)
+    order_status=Column(String(20),nullable=True)
+    mrp=Column(Integer,nullable=True)
+    discount_on_product=Column(Integer,nullable=True)
+    total_price=Column(Integer,nullable=True)
+    ordered_at=Column(TIMESTAMP,nullable=True)
+    
+class OtpManufacturer(base):
+    __tablename__="Otpmanufacturer"
+    id=Column(Integer,primary_key=True)
+    email=Column(String(200),nullable=False)
+    otp=Column(Integer,nullable=False)
+
+
+

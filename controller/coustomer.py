@@ -1,6 +1,6 @@
-from fastapi import HTTPException
+from fastapi import HTTPException,Query
 
-from modals.usermodal import Coustomer,Otp,Category,Brand
+from modals.usermodal import Coustomer,Otp,Category,Brand,Product,AddToCart,OrderPlaced
 from utils.function import hash_password,authanticate_coustomer,create_tokens,EXPIRY_MINUTES
 
 
@@ -42,7 +42,7 @@ def coutomer_register(data,db:Session):
               raise HTTPException (status_code=404,detail="Your Password length is less than 8")
         raise HTTPException ( status_code=404,detail="Please use Special Crackter @,#,$,&")
     
-#coustomer login
+#Coustomer login
 def coustomer_login(data,db:Session):
     coustomer=authanticate_coustomer(db,data.email,data.password)
     if not coustomer:
@@ -54,7 +54,11 @@ def coustomer_login(data,db:Session):
             "token_url":token}
 
 
+#Sent otp
 def sent_otp(data,db:Session):
+    otp=db.query(Otp).filter(Otp.email==data.email).first()
+    if otp:
+        raise HTTPException (status_code=404,detail="This Email otp already sent")
     coustomer=db.query(Coustomer).filter(Coustomer.email==data.email).first()
     if not coustomer:
         raise HTTPException (status_code=404,detail="invaild Email")
@@ -63,14 +67,14 @@ def sent_otp(data,db:Session):
     db.add(xyz)
     db.commit()
     db.refresh(xyz)
-    return {"msg":"sent otp",
+    return {"msg":f"sent otp this {data.email}",
             "email":data.email,
             "otp":otp}
 
 
 
 
-# coustmer reset password 
+# Coustmer reset password 
 def reset_password_by_coustomer(data,db:Session) :
         coustomer=db.query(Otp).filter(Otp.email==data.email).first()
         if not coustomer:
@@ -93,12 +97,12 @@ def reset_password_by_coustomer(data,db:Session) :
 
 
 
-#show all category of coustomer
+#Show all category of coustomer
 def show_all_category(db:Session):
     category=db.query(Category).all()
     return category
     
-#show all brand pf coustomer
+#Show all brand of coustomer
 def show_all_brand(db:Session):
     brand=db.query(Brand).all()
     return brand
@@ -106,6 +110,126 @@ def show_all_brand(db:Session):
 
 
 
+#Get product by product id 
+
+def get_product_by_id(id,db:Session):
+    product=db.query(Product).filter(Product.id==id).first()
+    if product:
+        return product
+    raise HTTPException(status_code=404,detail="Not avialable")
+
+
+#Get product  data according to page 
+def get_all_product_by_page(page:Query,limit:Query,db:Session):
+    product=db.query(Product)
+    skip=int((page-1)*limit)
+    xyz=product.offset(skip).limit(limit).all()
+    return {"msg":"your data",
+                "limit":limit,
+                "data":xyz}
+
+
+
+#Search product by product name
+def serach_product_by_name(limit,page,name,db:Session):
+    data=db.query(Product)
+    if name:
+        final=data.filter(Product.product_name.ilike(f"%{name}%"))
+    skip=int((page-1)*limit)
+    userdata=final.offset(skip).limit(limit).all()
+    return {"pageno":page,
+    "limit":limit,
+    "data":userdata}  
+
+
+
+#Add to Cart
+def add_to_cart(data,db:Session):
+    coustomer=db.query(Coustomer).filter(Coustomer.id==data.coustomer_id).first()
+    if not coustomer:
+        raise  HTTPException(status_code=404,detail="invalid coustomer id ")
+    product=db.query(Product).filter(Product.id==data.product_id).first()
+    if not product:
+        raise HTTPException(status_code=404,detail="product not avialable")
+    if product.product_quantity :
+        xyz=AddToCart(coustomer_id=data.coustomer_id,product_id=data.product_id,product_quantity=data.product_quantity)
+        db.add(xyz)
+        db.commit()
+        db.refresh(xyz)
+        return {"msg":"Product add to cart "}
+    raise HTTPException(status_code=404,detail="out of stock")
+
+
+
+
+
+#Oder Placed
+
+oder_done="your order is done "
+payment_mode=["Cash on delivery","upi"]
+def order_placed(data,db:Session):
+    coustomer=db.query(AddToCart).filter(AddToCart.coustomer_id==data.coustomer_id).first()
+    if not coustomer:
+        raise HTTPException(status_code=404,detail="please add to cart")
+    product=db.query(Product).filter(Product.id==coustomer.product_id).first()
+    if not product:
+         raise HTTPException(status_code=404,detail="inalvid ")
+    for i in payment_mode:
+        if i==data.payment_mode:
+               totalprice=coustomer.product_quantity*product.sale_price
+               time=datetime.now()
+               discount_value=(10*product.discount_percentage)*coustomer.product_quantity
+               xyz=OrderPlaced(coustomer_id=data.coustomer_id,
+                               product_id=coustomer.product_id,
+                               product_name=product.product_name,
+                               product_quantity=coustomer.product_quantity,
+                               payment_mode=data.payment_mode,
+                               order_status=oder_done,
+                               mrp=product.mrp,
+                               discount_on_product=discount_value,
+                               total_price=totalprice,
+                               ordered_at=time)
+               db.add(xyz)
+               db.commit()
+               db.refresh(xyz)
+               db.delete(coustomer)
+               xyz=product.product_quantity-coustomer.product_quantity
+               product.product_quantity=xyz
+               db.commit()
+               return {"msg":" OrderPlaced THank YOu",
+                       "Product_name":product.product_name,
+                       "payment_mode":data.payment_mode,
+                       "Oder_Status":oder_done,
+                       "MRP":product.mrp,
+                       "Discount_On_Product":discount_value,
+                       "Product_Quantity":coustomer.product_quantity,
+                       "Total_price":totalprice}
+    raise HTTPException(status_code=404,detail="Choose Payment Mode from in Cash on delivery or  upi")
     
+    
+
+#order cancel
+def order_cancel(data,db:Session):
+    coustomer=db.query(OrderPlaced).filter(OrderPlaced.coustomer_id==data.coustomer_id).first()
+    if coustomer:
+        product=db.query(Product).filter(Product.id==coustomer.product_id).first()
+        if product:
+            product.product_quantity+=coustomer.product_quantity
+            db.commit()
+            db.delete(coustomer)
+            db.commit()
+            db.refresh(coustomer)
+            return {"msg":f"Delete your order {coustomer.product_id}"}
+        raise HTTPException(status_code=404,detail="invalid product id ")
+    raise HTTPException(status_code=404,detail="Your not order")
+        
+
+
+
+
+
+
+
+
 
 

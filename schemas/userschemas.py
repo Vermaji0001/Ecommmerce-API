@@ -34,6 +34,7 @@ class ProductCreateSchemas(BaseModel):
     product_name:str
     product_type:str
     category:str
+    product_quantity:int
     brand:str
     mrp:int
     discount:int
@@ -43,6 +44,29 @@ class OtpSentSchemas(BaseModel):
 
 
 class ResetPasswordSchemas(BaseModel):
+    email:str
+    otp:int
+    new_password:str
+
+class AddToCartSchemas(BaseModel):
+    coustomer_id:int
+    product_id:int
+    product_quantity:int    
+
+class OrderPlacedSchemas(BaseModel):
+    coustomer_id:int 
+    payment_mode:str  
+
+class OrderCancelSchemas(BaseModel):
+    coustomer_id:int 
+
+
+class SentOptManufacturer(BaseModel):
+    email:str
+
+
+
+class ResetPasswordManufacturer(BaseModel):
     email:str
     otp:int
     new_password:str
