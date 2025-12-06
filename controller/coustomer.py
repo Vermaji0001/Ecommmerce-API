@@ -1,6 +1,6 @@
 from fastapi import HTTPException,Query
 
-from modals.usermodal import Coustomer,Otp,Category,Brand,Product,AddToCart,OrderPlaced
+from modals.usermodal import Coustomer,Otp,Category,Brand,Product,AddToCart,OrderPlaced,CoustomerProfile
 from utils.function import hash_password,authanticate_coustomer,create_tokens,EXPIRY_MINUTES
 
 
@@ -225,11 +225,76 @@ def order_cancel(data,db:Session):
         
 
 
+#create profile
+def create_profile_by_coustomer(data,db:Session):
+    profile=db.query(CoustomerProfile).filter(CoustomerProfile.coustomer_id==data.coustomer_id).first()
+    if profile:
+        raise HTTPException (status_code=404,detail="Already create profile this coustomer")
+    coustomer=db.query(Coustomer).filter(Coustomer.id==data.coustomer_id).first()
+    if coustomer:
+        xyz=CoustomerProfile(coustomer_id=data.coustomer_id,
+                             coustomer_name=coustomer.coustomer_name,
+                             address=coustomer.address,
+                             state=coustomer.state,
+                             pin_code=coustomer.pincode)
+        db.add(xyz)
+        db.commit()
+        db.refresh(xyz)
+        return {"msg":"create your profile"}
+    raise HTTPException(status_code=404,detail="coustomer not register")
 
 
 
 
+#change coustomer data 
+def change_coustomer_data(data,db:Session):
+    coustomer=db.query(Coustomer).filter(Coustomer.id==data.coustomer_id).first()
+    if coustomer:
+        coustomer.coustomer_name=data.coustomer_name   #change data in coustomer table
+        coustomer.state=data.state
+        coustomer.address=data.address
+        coustomer.pincode=data.pin_code
+        db.commit()
+        db.refresh(coustomer)
+        profile=db.query(CoustomerProfile).filter(CoustomerProfile.coustomer_id==data.coustomer_id).first() 
+        if profile:
+           profile.coustomer_name=data.coustomer_name                           #change data in cosutomer profile
+           profile.state=data.state
+           profile.address=data.address
+           profile.pin_code=data.pin_code
+           db.commit()
+           db.refresh(profile)
+           return{"msg":"change your coustomer data"}
+        raise HTTPException(status_code=404,detail="not match coustomer id to profile")
+    raise HTTPException(status_code=404,detail="Not coustomer")
+    
 
 
+
+#get profile by coustomer
+
+def get_profile_by_coustomer(data,db:Session):
+    profile=db.query(CoustomerProfile).filter(CoustomerProfile.coustomer_id==data.coustomer_id).first()
+    if not profile:
+        raise HTTPException(status_code=404,detail="your not profile")
+    return profile
+
+
+#get_product_by category
+def get_product_by_category(data,db:Session):
+    product=db.query(Product).filter(Product.category==data.category).all()
+   
+    if not product:
+        raise HTTPException(status_code=404,detail=f"this  is wrong category")
+    return product
+
+
+#get product by brand
+
+def get_product_by_brand(data,db:Session):
+    product=db.query(Product).filter(Product.brand==data.brand).all()
+    if not product:
+        raise HTTPException(status_code=404,detail=f"this  is wrong brand")
+    return product
 
 

@@ -101,3 +101,23 @@ class OtpManufacturer(base):
 
 
 
+class CoustomerProfile(base):
+    __tablename__="coustomerprofile"
+    id=Column(Integer,primary_key=True)
+    coustomer_id=Column(Integer,nullable=False)
+    coustomer_name=Column(String(20),nullable=True)
+    address=Column(String(20),nullable=False)
+    state=Column(String(200),nullable=False)
+    pin_code=Column(Integer,nullable=False)
+    total_order=Column(Integer,nullable=True)
+
+
+class ManufacturerProfile(base):
+    __tablename__="manufacturerprofile"
+    id=Column(Integer,primary_key=True)
+    manufacturer_id=Column(Integer,nullable=False)
+    store_name=Column(String(200),nullable=False)
+    manufacturer_name=Column(String(20),nullable=True)
+    email=Column(String(20),nullable=False)
+    total_product=Column(Integer,nullable=True)   
+

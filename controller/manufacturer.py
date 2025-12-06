@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from modals.usermodal import Manufacturer,Category,Brand,Product,OtpManufacturer
+from modals.usermodal import Manufacturer,Category,Brand,Product,OtpManufacturer,ManufacturerProfile
 from datetime import datetime,timedelta
 from utils.function import hash_password
 from utils.function import authanticate_manufacturer,create_tokens,EXPIRY_MINUTES
@@ -50,8 +50,11 @@ def manufacturer_login(data,db:Session):
             "manufacturer_name":manufacturer.manufacturer_name,
             "token":token}
 
- 
+xyz=0
 def product_create(data,db:Session):
+      profile=db.query(ManufacturerProfile).filter(ManufacturerProfile.manufacturer_id==data.manufacturer_id).first()
+      if not profile:
+          raise HTTPException(status_code=404,detail="Not create Product Without create Profile")
       manufacturer=db.query(Manufacturer).filter(Manufacturer.id==data.manufacturer_id).first()
       manufacturerxyz=db.query(Product).filter(Product.product_name==data.product_name).first()
       if   manufacturer and   manufacturerxyz :
@@ -124,3 +127,83 @@ def reset_password_by_manufacturer(data,db:Session) :
                 raise HTTPException(status_code=404,detail="use special cracter @,#,$,& in password")   
         raise HTTPException(status_code=404,detail="invaild otp")    
       
+#create manufacturer profile
+
+def create_profile_by_manufacturer(data,db:Session):
+    profile=db.query(ManufacturerProfile).filter(ManufacturerProfile.manufacturer_id==data.manufacturer_id).first()
+    if profile:
+        raise HTTPException (status_code=404,detail="Already create profile this manufacturer")
+    manufacturer=db.query(Manufacturer).filter(Manufacturer.id==data.manufacturer_id).first()
+    if manufacturer:
+        xyz=ManufacturerProfile(
+                             manufacturer_id=data.manufacturer_id,
+                             store_name=manufacturer.store_name,
+                             manufacturer_name=manufacturer.manufacturer_name,
+                             email=manufacturer.email,
+                             )
+        db.add(xyz)
+        db.commit()
+        db.refresh(xyz)
+        return {"msg":"create your profile by manufacturer"}
+    raise HTTPException(status_code=404,detail="manufacturer not register")
+
+
+
+
+#change manufacturer data
+
+def change_manufacturer_data(data,db:Session):
+    manufacturer=db.query(Manufacturer).filter(Manufacturer.id==data.manufacturer_id).first()
+    if manufacturer:
+        manufacturer.store_name=data.store_name
+        manufacturer.manufacturer_name=data.manufacturer_name
+        db.commit()
+        db.refresh(manufacturer)
+        profile=db.query(ManufacturerProfile).filter(ManufacturerProfile.manufacturer_id==data.manufacturer_id).first()
+        if profile:
+            profile.store_name=data.store_name
+            profile.manufacturer_name=data.manufacturer_name
+            db.commit()
+            db.refresh(profile)
+            return {"msg":"change your data by manufacturer"}
+        raise HTTPException(status_code=404,detail="Not match your profile id")
+    raise HTTPException(status_code=404,detail="Not match your manufacturer id to manufacturer data")
+
+
+#get profile by manufacturer
+
+def get_profile_by_manufacturer(data,db:Session):
+    profile=db.query(ManufacturerProfile).filter(ManufacturerProfile.manufacturer_id==data.manufacturer_id).first()
+    if not profile:
+        raise HTTPException(status_code=404,detail="your not profile")
+    return profile
+
+
+
+#get all product by manufacturer
+
+def get_all_product_by_manufacturer(data,db:Session):
+    product=db.query(Product).filter(Product.manufacturer_id==data.manufacturer_id).all()
+    if not product:
+        raise HTTPException(status_code=404,detail="Not product This manufacturer")
+    return product
+
+
+#delete product by id
+
+def delete_product_by_id(data,db:Session):
+    product=db.query(Product).filter(Product.id==data.delete_product).first()
+    if product:
+        xyz=db.query(Product).filter(Product.manufacturer_id==data.manufacturer_id).first()
+        db.delete(xyz)
+        db.commit()
+        
+        return {"msg":"delete your product"}
+    raise HTTPException(status_code=404,detail="invalid product  id")
+    
+
+    
+        
+
+
+

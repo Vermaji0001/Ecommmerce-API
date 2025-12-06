@@ -70,3 +70,44 @@ class ResetPasswordManufacturer(BaseModel):
     email:str
     otp:int
     new_password:str
+
+class CoustomerProfileSchemas(BaseModel):
+    coustomer_id:int    
+
+class ManufacturerProfileSchemas(BaseModel):
+    manufacturer_id:int   
+
+class ChangeCoustomerDataSchemas(BaseModel):
+    coustomer_id:int
+    coustomer_name:str
+    state:str
+    address:str
+    pin_code:int    
+
+class ChangeManufacturerDataSchemas(BaseModel):
+    manufacturer_id:int
+    store_name:str
+    manufacturer_name:str
+
+class GetCoustomerProfile(BaseModel):
+    coustomer_id:int    
+        
+
+class GetManufacturerProfile(BaseModel):
+    manufacturer_id:int    
+                
+
+class GetAllProductManufacturer(BaseModel):
+    manufacturer_id:int    
+                                
+
+class DeleteProduct(BaseModel):
+    manufacturer_id:int
+    delete_product:int
+
+class GetproductByCategory(BaseModel):
+    category:str
+
+
+class GetproductByBrand(BaseModel):
+    brand:str    
