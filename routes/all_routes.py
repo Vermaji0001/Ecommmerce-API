@@ -1,9 +1,9 @@
 from fastapi import APIRouter,Depends,Query
 
 from sqlalchemy.orm import Session
-from controller.coustomer import coutomer_register,coustomer_login,sent_otp,reset_password_by_coustomer,show_all_category,show_all_brand,get_product_by_id,get_all_product_by_page,serach_product_by_name,add_to_cart,order_placed,order_cancel,create_profile_by_coustomer,change_coustomer_data,get_profile_by_coustomer,get_product_by_category,get_product_by_brand
-from controller.manufacturer import manufacturer_register,manufacturer_login,product_create,sent_otp_by_manufacturer,reset_password_by_manufacturer,create_profile_by_manufacturer,change_manufacturer_data,get_profile_by_manufacturer,get_all_product_by_manufacturer,delete_product_by_id
-from schemas.userschemas import CoustomerRegisterSchemas,CoustomerLoginSchemas,ManufacturerRegisterSchemas,ManufacturerLoginSchemas,ProductCreateSchemas,OtpSentSchemas,ResetPasswordSchemas,AddToCartSchemas,OrderPlacedSchemas,OrderCancelSchemas,SentOptManufacturer,ResetPasswordManufacturer,CoustomerProfileSchemas,ManufacturerProfileSchemas,ChangeCoustomerDataSchemas,ChangeManufacturerDataSchemas,GetCoustomerProfile,GetManufacturerProfile,GetAllProductManufacturer,DeleteProduct,GetproductByCategory,GetproductByBrand
+from controller.coustomer import coutomer_register,coustomer_login,sent_otp,reset_password_by_coustomer,show_all_category,show_all_brand,get_product_by_id,get_all_product_by_page,serach_product_by_name,add_to_cart,order_placed,order_cancel,create_profile_by_coustomer,change_coustomer_data,get_profile_by_coustomer,get_product_by_category,get_product_by_brand,get_order_by_coustomer,delete_coustomer
+from controller.manufacturer import manufacturer_register,manufacturer_login,product_create,sent_otp_by_manufacturer,reset_password_by_manufacturer,create_profile_by_manufacturer,change_manufacturer_data,get_profile_by_manufacturer,get_all_product_by_manufacturer,delete_product_by_id,product_data_change,delete_manufacturer
+from schemas.userschemas import CoustomerRegisterSchemas,CoustomerLoginSchemas,ManufacturerRegisterSchemas,ManufacturerLoginSchemas,ProductCreateSchemas,OtpSentSchemas,ResetPasswordSchemas,AddToCartSchemas,OrderPlacedSchemas,OrderCancelSchemas,SentOptManufacturer,ResetPasswordManufacturer,CoustomerProfileSchemas,ManufacturerProfileSchemas,ChangeCoustomerDataSchemas,ChangeManufacturerDataSchemas,GetCoustomerProfile,GetManufacturerProfile,GetAllProductManufacturer,DeleteProduct,GetproductByCategory,GetproductByBrand,ChangeProductData,GetCoustomerOrder
 from utils.get_db import get_db
 from utils.function import manufacturer_data_by_token,coustomer_data_by_token
 
@@ -197,4 +197,31 @@ def product_get_by_category(data:GetproductByCategory,db:Session=Depends(get_db)
 @router.get("/getproductbybrand")
 def product_get_by_brand(data:GetproductByBrand,db:Session=Depends(get_db)):
     final=get_product_by_brand(data,db)
+    return final
+
+
+#Change Product Data
+@router.patch("/changeproductdata")
+def change_product_data(data:ChangeProductData,db:Session=Depends(get_db)):
+    final=product_data_change(data,db)
+    return final
+
+#Get All Order
+@router.get("/getallorder")
+def order_get(data:GetCoustomerOrder,db:Session=Depends(get_db)):
+    final=get_order_by_coustomer(data,db)
+    return final
+
+
+#Delete Coustomer 
+@router.delete("/deletecoustomer/{id}")
+def coustomer_delete(id:int,db:Session=Depends(get_db)):
+    final=delete_coustomer(id,db)
+    return final
+
+
+#delete Manufacturer
+@router.delete("/deletemanufacturer/{id}")
+def manufacturer_delete(id:int,db:Session=Depends(get_db)):
+    final=delete_manufacturer(id,db)
     return final

@@ -37,7 +37,7 @@ class ProductCreateSchemas(BaseModel):
     product_quantity:int
     brand:str
     mrp:int
-    discount:int
+    discount_percentage:int
       
 class OtpSentSchemas(BaseModel):
     email:str
@@ -110,4 +110,19 @@ class GetproductByCategory(BaseModel):
 
 
 class GetproductByBrand(BaseModel):
-    brand:str    
+    brand:str  
+
+class ChangeProductData(BaseModel):
+    manufacturer_id:int
+    product_id:int
+    product_name:str
+    product_type:str
+    category:str
+    product_quantity:int
+    brand:str
+    mrp:int
+    discount:int  
+
+
+class GetCoustomerOrder(BaseModel):
+    coustomer_id:int          

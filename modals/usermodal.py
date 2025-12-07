@@ -1,7 +1,9 @@
 
 
 from sqlalchemy import Column,Integer,String,TIMESTAMP
+from sqlalchemy.orm import relationship
 from utils.get_db import base
+from sqlalchemy import ForeignKey
 
 
 
@@ -16,6 +18,8 @@ class Coustomer (base):
     address=Column(String(200),nullable=False)
     pincode=Column(Integer,nullable=False)
     created_at=Column(TIMESTAMP,nullable=True)
+    profile=relationship("CoustomerProfile",back_populates="coustomer",cascade="all,delete-orphan")
+    order=relationship("OrderPlaced",back_populates="coustomer",cascade="all,delete-orphan")
 
 
 
@@ -27,6 +31,8 @@ class Manufacturer(base):
     email=Column(String(200),nullable=False)
     password=Column(String(200),nullable=False)
     created_at=Column(TIMESTAMP,nullable=True)
+    profile=relationship("ManufacturerProfile",back_populates="manufacturer",cascade="all,delete-orphan")
+    product=relationship("Product",back_populates="manufacturer",cascade="all,delete-orphan",uselist=True)
 
 
 class Category(base):
@@ -43,7 +49,7 @@ class Brand(base):
 class Product(base):
     __tablename__="Product"
     id=Column(Integer,primary_key=True)
-    manufacturer_id=Column(Integer,nullable=False)
+    manufacturer_id=Column(Integer,ForeignKey("manufacturersignup.id",ondelete='CASCADE'),nullable=False)
     product_name=Column(String(200),nullable=False)
     product_type=Column(String(200),nullable=False)
     category=Column(String(200),nullable=False)
@@ -52,6 +58,7 @@ class Product(base):
     mrp=Column(Integer,nullable=False)
     discount_percentage=Column(Integer,nullable=False)
     sale_price=Column(Integer,nullable=True)
+    manufacturer=relationship("Manufacturer",back_populates="product",uselist=True)
 
 
 
@@ -82,7 +89,7 @@ class AddToCart(base):
 class OrderPlaced(base):
     __tablename__="Oderpalced"
     id=Column(Integer,primary_key=True)
-    coustomer_id=Column(Integer,nullable=False)
+    coustomer_id=Column(Integer,ForeignKey("coustomerregister.id",ondelete='CASCADE'),nullable=False)
     product_id=Column(Integer,nullable=True)
     product_name=Column(String(200),nullable=True)
     product_quantity=Column(Integer,nullable=True)
@@ -92,6 +99,7 @@ class OrderPlaced(base):
     discount_on_product=Column(Integer,nullable=True)
     total_price=Column(Integer,nullable=True)
     ordered_at=Column(TIMESTAMP,nullable=True)
+    coustomer=relationship("Coustomer",back_populates="order",uselist=True)
     
 class OtpManufacturer(base):
     __tablename__="Otpmanufacturer"
@@ -104,20 +112,22 @@ class OtpManufacturer(base):
 class CoustomerProfile(base):
     __tablename__="coustomerprofile"
     id=Column(Integer,primary_key=True)
-    coustomer_id=Column(Integer,nullable=False)
+    coustomer_id=Column(Integer,ForeignKey("coustomerregister.id",ondelete='CASCADE'),nullable=False)
     coustomer_name=Column(String(20),nullable=True)
     address=Column(String(20),nullable=False)
     state=Column(String(200),nullable=False)
     pin_code=Column(Integer,nullable=False)
-    total_order=Column(Integer,nullable=True)
+    coustomer=relationship("Coustomer",back_populates="profile")
+    
 
 
 class ManufacturerProfile(base):
     __tablename__="manufacturerprofile"
     id=Column(Integer,primary_key=True)
-    manufacturer_id=Column(Integer,nullable=False)
+    manufacturer_id=Column(Integer,ForeignKey("manufacturersignup.id",ondelete='CASCADE'),nullable=False)
     store_name=Column(String(200),nullable=False)
     manufacturer_name=Column(String(20),nullable=True)
     email=Column(String(20),nullable=False)
-    total_product=Column(Integer,nullable=True)   
+    manufacturer=relationship("Manufacturer",back_populates="profile")
+      
 

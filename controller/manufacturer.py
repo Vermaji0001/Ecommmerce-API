@@ -50,7 +50,7 @@ def manufacturer_login(data,db:Session):
             "manufacturer_name":manufacturer.manufacturer_name,
             "token":token}
 
-xyz=0
+
 def product_create(data,db:Session):
       profile=db.query(ManufacturerProfile).filter(ManufacturerProfile.manufacturer_id==data.manufacturer_id).first()
       if not profile:
@@ -59,7 +59,7 @@ def product_create(data,db:Session):
       manufacturerxyz=db.query(Product).filter(Product.product_name==data.product_name).first()
       if   manufacturer and   manufacturerxyz :
            raise HTTPException (status_code=404,detail="Product is already reister by Manufacturer")
-      discount_rupees=data.mrp*data.discount/100
+      discount_rupees=data.mrp*data.discount_percentage/100
       saleprice=data.mrp-discount_rupees
       manufact=Product(manufacturer_id=data.manufacturer_id,
                             product_name=data.product_name,
@@ -68,7 +68,7 @@ def product_create(data,db:Session):
                             product_quantity=data.product_quantity,
                             brand=data.brand,
                             mrp=data.mrp,
-                            discount_percentage=data.discount,
+                            discount_percentage=data.discount_percentage,
                             sale_price=saleprice)
       db.add(manufact)
       db.commit()
@@ -127,7 +127,7 @@ def reset_password_by_manufacturer(data,db:Session) :
                 raise HTTPException(status_code=404,detail="use special cracter @,#,$,& in password")   
         raise HTTPException(status_code=404,detail="invaild otp")    
       
-#create manufacturer profile
+#Create manufacturer profile
 
 def create_profile_by_manufacturer(data,db:Session):
     profile=db.query(ManufacturerProfile).filter(ManufacturerProfile.manufacturer_id==data.manufacturer_id).first()
@@ -144,13 +144,13 @@ def create_profile_by_manufacturer(data,db:Session):
         db.add(xyz)
         db.commit()
         db.refresh(xyz)
-        return {"msg":"create your profile by manufacturer"}
+        return {"msg":"create  profile by manufacturer"}
     raise HTTPException(status_code=404,detail="manufacturer not register")
 
 
 
 
-#change manufacturer data
+#Change manufacturer data
 
 def change_manufacturer_data(data,db:Session):
     manufacturer=db.query(Manufacturer).filter(Manufacturer.id==data.manufacturer_id).first()
@@ -170,7 +170,7 @@ def change_manufacturer_data(data,db:Session):
     raise HTTPException(status_code=404,detail="Not match your manufacturer id to manufacturer data")
 
 
-#get profile by manufacturer
+#Get profile by manufacturer
 
 def get_profile_by_manufacturer(data,db:Session):
     profile=db.query(ManufacturerProfile).filter(ManufacturerProfile.manufacturer_id==data.manufacturer_id).first()
@@ -180,7 +180,7 @@ def get_profile_by_manufacturer(data,db:Session):
 
 
 
-#get all product by manufacturer
+#Get all product by manufacturer
 
 def get_all_product_by_manufacturer(data,db:Session):
     product=db.query(Product).filter(Product.manufacturer_id==data.manufacturer_id).all()
@@ -189,7 +189,7 @@ def get_all_product_by_manufacturer(data,db:Session):
     return product
 
 
-#delete product by id
+#Delete product by id
 
 def delete_product_by_id(data,db:Session):
     product=db.query(Product).filter(Product.id==data.delete_product).first()
@@ -202,7 +202,48 @@ def delete_product_by_id(data,db:Session):
     raise HTTPException(status_code=404,detail="invalid product  id")
     
 
-    
+#Change Product Data By Manufacturer
+
+def product_data_change(data,db:Session):
+      product=db.query(Product).filter(Product.id==data.product_id).first()
+      if not product:
+          raise HTTPException(status_code=404,detail="Not match your Product Id")
+      if product.manufacturer_id==data.manufacturer_id:
+          discount_rupees=data.mrp*data.discount/100
+          saleprice=data.mrp-discount_rupees
+          product.product_name=data.product_name,
+          product.product_type=data.product_type,
+          product.category=data.category,
+          product.product_quantity=data.product_quantity,
+          product.brand=data.brand,
+          product.mrp=data.mrp,
+          product.discount_percentage=data.discount,
+          product.sale_price=saleprice
+          db.commit()
+          db.refresh(product)
+          category=db.query(Category).filter(Category.category_name==data.category).first()
+          if not category:
+           xyz=Category(category_name=data.category)
+           db.add(xyz)
+           db.commit()
+           db.refresh(xyz)
+          brand=db.query(Brand).filter(Brand.brand_name==data.brand).first()  
+          if not brand :
+            new=Brand(brand_name=data.brand)
+            db.add(new)
+            db.commit()
+            db.refresh(new)
+          return {"msg":"Change Your Product Data "}
+
+#delete manufacturer
+
+def delete_manufacturer(id,db:Session):
+    manufacturer=db.query(Manufacturer).filter(Manufacturer.id==id).first()
+    if manufacturer:
+        db.delete(manufacturer)
+        db.commit()
+        return {"msg":f"Delete your manufacturer {id} "}
+    raise HTTPException(status_code=404,detail="invaild manufacturer id ")    
         
 
 

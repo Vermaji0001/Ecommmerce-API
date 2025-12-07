@@ -46,7 +46,7 @@ def coutomer_register(data,db:Session):
 def coustomer_login(data,db:Session):
     coustomer=authanticate_coustomer(db,data.email,data.password)
     if not coustomer:
-        raise HTTPException (status_code=404,detail="invalid detail")
+        raise HTTPException (status_code=404,detail="invalid details")
     token=create_tokens(data={"sub":str(coustomer.id) },exipre=timedelta(minutes=EXPIRY_MINUTES))
     return {"msg":"sucessfully login",
             "user_id":coustomer.id,
@@ -58,7 +58,7 @@ def coustomer_login(data,db:Session):
 def sent_otp(data,db:Session):
     otp=db.query(Otp).filter(Otp.email==data.email).first()
     if otp:
-        raise HTTPException (status_code=404,detail="This Email otp already sent")
+        raise HTTPException (status_code=404,detail="On This Email otp already sent")
     coustomer=db.query(Coustomer).filter(Coustomer.email==data.email).first()
     if not coustomer:
         raise HTTPException (status_code=404,detail="invaild Email")
@@ -78,7 +78,7 @@ def sent_otp(data,db:Session):
 def reset_password_by_coustomer(data,db:Session) :
         coustomer=db.query(Otp).filter(Otp.email==data.email).first()
         if not coustomer:
-          raise HTTPException (status_code=404,detail="Not sent otp this email")
+          raise HTTPException (status_code=404,detail="Please sent Otp")
         if coustomer.otp==data.otp:
             for i in special_crackter:
                 if i in data.new_password: 
@@ -116,7 +116,7 @@ def get_product_by_id(id,db:Session):
     product=db.query(Product).filter(Product.id==id).first()
     if product:
         return product
-    raise HTTPException(status_code=404,detail="Not avialable")
+    raise HTTPException(status_code=404,detail="Not avialable this product")
 
 
 #Get product  data according to page 
@@ -145,6 +145,9 @@ def serach_product_by_name(limit,page,name,db:Session):
 
 #Add to Cart
 def add_to_cart(data,db:Session):
+    profile=db.query(CoustomerProfile).filter(CoustomerProfile.coustomer_id==data.coustomer_id).first()
+    if not profile:
+        raise HTTPException(status_code=404,detail="create profile before add to cart")
     coustomer=db.query(Coustomer).filter(Coustomer.id==data.coustomer_id).first()
     if not coustomer:
         raise  HTTPException(status_code=404,detail="invalid coustomer id ")
@@ -178,7 +181,8 @@ def order_placed(data,db:Session):
         if i==data.payment_mode:
                totalprice=coustomer.product_quantity*product.sale_price
                time=datetime.now()
-               discount_value=(10*product.discount_percentage)*coustomer.product_quantity
+               discount_value=product.mrp*product.discount_percentage/100
+               discount_on_one_product=product.mrp-discount_value
                xyz=OrderPlaced(coustomer_id=data.coustomer_id,
                                product_id=coustomer.product_id,
                                product_name=product.product_name,
@@ -186,7 +190,7 @@ def order_placed(data,db:Session):
                                payment_mode=data.payment_mode,
                                order_status=oder_done,
                                mrp=product.mrp,
-                               discount_on_product=discount_value,
+                               discount_on_product=discount_on_one_product,
                                total_price=totalprice,
                                ordered_at=time)
                db.add(xyz)
@@ -217,8 +221,7 @@ def order_cancel(data,db:Session):
             product.product_quantity+=coustomer.product_quantity
             db.commit()
             db.delete(coustomer)
-            db.commit()
-            db.refresh(coustomer)
+            
             return {"msg":f"Delete your order {coustomer.product_id}"}
         raise HTTPException(status_code=404,detail="invalid product id ")
     raise HTTPException(status_code=404,detail="Your not order")
@@ -241,7 +244,7 @@ def create_profile_by_coustomer(data,db:Session):
         db.commit()
         db.refresh(xyz)
         return {"msg":"create your profile"}
-    raise HTTPException(status_code=404,detail="coustomer not register")
+    raise HTTPException(status_code=404,detail="Coustomer not register")
 
 
 
@@ -294,7 +297,24 @@ def get_product_by_category(data,db:Session):
 def get_product_by_brand(data,db:Session):
     product=db.query(Product).filter(Product.brand==data.brand).all()
     if not product:
-        raise HTTPException(status_code=404,detail=f"this  is wrong brand")
+        raise HTTPException(status_code=404,detail="this  is wrong brand")
     return product
 
+#get odrder by coustomer
 
+def get_order_by_coustomer(data,db:Session):
+    order=db.query(OrderPlaced).filter(OrderPlaced.coustomer_id==data.coustomer_id).all()
+    if not order:
+        raise HTTPException(status_code=404,detail="Your Not Order")
+    return order
+
+
+#delete Costomer
+
+def delete_coustomer(id,db:Session):
+    coustomer=db.query(Coustomer).filter(Coustomer.id==id).first()
+    if coustomer:
+        db.delete(coustomer)
+        db.commit()
+        return {"msg":f"Delete your coustomer {id} "}
+    raise HTTPException(status_code=404,detail="invaild Coustomer id ")
