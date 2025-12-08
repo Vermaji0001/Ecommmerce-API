@@ -1,6 +1,6 @@
 from fastapi import HTTPException,Query
 
-from modals.usermodal import Coustomer,Otp,Category,Brand,Product,AddToCart,OrderPlaced,CoustomerProfile
+from modals.all_modals import Coustomer,Otp,Category,Brand,Product,AddToCart,OrderPlaced,CoustomerProfile
 from utils.function import hash_password,authanticate_coustomer,create_tokens,EXPIRY_MINUTES
 
 
@@ -40,7 +40,7 @@ def coutomer_register(data,db:Session):
                  db.refresh(user)
                  return {"msg":"Coustomer is Regsiter "}
               raise HTTPException (status_code=404,detail="Your Password length is less than 8")
-        raise HTTPException ( status_code=404,detail="Please use Special Crackter @,#,$,&")
+        raise HTTPException ( status_code=404,detail="Please use Special Crackter @,#,$,& in Password")
     
 #Coustomer login
 def coustomer_login(data,db:Session):
@@ -154,13 +154,15 @@ def add_to_cart(data,db:Session):
     product=db.query(Product).filter(Product.id==data.product_id).first()
     if not product:
         raise HTTPException(status_code=404,detail="product not avialable")
-    if product.product_quantity :
-        xyz=AddToCart(coustomer_id=data.coustomer_id,product_id=data.product_id,product_quantity=data.product_quantity)
-        db.add(xyz)
-        db.commit()
-        db.refresh(xyz)
-        return {"msg":"Product add to cart "}
-    raise HTTPException(status_code=404,detail="out of stock")
+    if product.product_quantity!=0:
+       if data.product_quantity<=product.product_quantity :
+          xyz=AddToCart(coustomer_id=data.coustomer_id,product_id=data.product_id,product_quantity=data.product_quantity)
+          db.add(xyz)
+          db.commit()
+          db.refresh(xyz)
+          return {"msg":"Product add to cart "}
+       raise HTTPException(status_code=404,detail=f" This product Only {product.product_quantity} avialable")
+    raise HTTPException(status_code=404,detail=f"out of stock")
 
 
 
@@ -318,3 +320,16 @@ def delete_coustomer(id,db:Session):
         db.commit()
         return {"msg":f"Delete your coustomer {id} "}
     raise HTTPException(status_code=404,detail="invaild Coustomer id ")
+
+
+#delete Cart
+
+
+def delete_add_to_cart(id,db:Session):
+    addcart=db.query(AddToCart).filter(AddToCart.coustomer_id==id).first()
+    if addcart:
+        db.delete(addcart)
+        db.commit()
+        return {"msg":"Delete Your Cart"}
+    raise HTTPException (status_code=404,detail="Not Match your coustomer id ")
+    

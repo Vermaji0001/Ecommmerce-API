@@ -2,7 +2,7 @@
 
 from passlib.context import CryptContext
 from datetime import datetime,timedelta
-from modals.usermodal import Coustomer,Manufacturer
+from modals.all_modals import Coustomer,Manufacturer
 from fastapi import HTTPException,Depends
 from sqlalchemy.orm import Session
 from jose import jwt,JWTError

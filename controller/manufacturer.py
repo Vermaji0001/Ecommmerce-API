@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from modals.usermodal import Manufacturer,Category,Brand,Product,OtpManufacturer,ManufacturerProfile
+from modals.all_modals import Manufacturer,Category,Brand,Product,OtpManufacturer,ManufacturerProfile
 from datetime import datetime,timedelta
 from utils.function import hash_password
 from utils.function import authanticate_manufacturer,create_tokens,EXPIRY_MINUTES
