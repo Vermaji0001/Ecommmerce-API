@@ -173,7 +173,7 @@ def add_to_cart(data,db:Session):
 oder_done="your order is done "
 payment_mode=["Cash on delivery","upi"]
 def order_placed(data,db:Session):
-    coustomer=db.query(AddToCart).filter(AddToCart.coustomer_id==data.coustomer_id).first()
+    coustomer=db.query(AddToCart).filter(AddToCart.coustomer_id==data.coustomer_id).first()   
     if not coustomer:
         raise HTTPException(status_code=404,detail="please add to cart")
     product=db.query(Product).filter(Product.id==coustomer.product_id).first()
@@ -181,10 +181,9 @@ def order_placed(data,db:Session):
          raise HTTPException(status_code=404,detail="inalvid ")
     for i in payment_mode:
         if i==data.payment_mode:
-               totalprice=coustomer.product_quantity*product.sale_price
-               time=datetime.now()
-               discount_value=product.mrp*product.discount_percentage/100
-               discount_on_one_product=product.mrp-discount_value
+               totalprice=coustomer.product_quantity*product.sale_price  #Total price of product
+               time=datetime.now()                            #timeing of order
+               discount_value=product.mrp*product.discount_percentage/100   #discount on product
                xyz=OrderPlaced(coustomer_id=data.coustomer_id,
                                product_id=coustomer.product_id,
                                product_name=product.product_name,
@@ -192,14 +191,14 @@ def order_placed(data,db:Session):
                                payment_mode=data.payment_mode,
                                order_status=oder_done,
                                mrp=product.mrp,
-                               discount_on_product=discount_on_one_product,
+                               discount_on_product=discount_value,
                                total_price=totalprice,
                                ordered_at=time)
                db.add(xyz)
                db.commit()
                db.refresh(xyz)
                db.delete(coustomer)
-               xyz=product.product_quantity-coustomer.product_quantity
+               xyz=product.product_quantity-coustomer.product_quantity  #decrease order quantity from in product quantity
                product.product_quantity=xyz
                db.commit()
                return {"msg":" OrderPlaced THank YOu",

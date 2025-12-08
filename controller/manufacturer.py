@@ -59,8 +59,8 @@ def product_create(data,db:Session):
       manufacturerxyz=db.query(Product).filter(Product.product_name==data.product_name).first()
       if   manufacturer and   manufacturerxyz :
            raise HTTPException (status_code=404,detail="Product is already reister by Manufacturer")
-      discount_rupees=data.mrp*data.discount_percentage/100
-      saleprice=data.mrp-discount_rupees
+      discount_rupees=data.mrp*data.discount_percentage/100    #discount on product
+      saleprice=data.mrp-discount_rupees        #sale price
       manufact=Product(manufacturer_id=data.manufacturer_id,
                             product_name=data.product_name,
                             product_type=data.product_type,
@@ -72,13 +72,13 @@ def product_create(data,db:Session):
                             sale_price=saleprice)
       db.add(manufact)
       db.commit()
-      category=db.query(Category).filter(Category.category_name==data.category).first()
+      category=db.query(Category).filter(Category.category_name==data.category).first()  #add unique category in category table
       if not category:
            xyz=Category(category_name=data.category)
            db.add(xyz)
            db.commit()
            db.refresh(xyz)
-      brand=db.query(Brand).filter(Brand.brand_name==data.brand).first()  
+      brand=db.query(Brand).filter(Brand.brand_name==data.brand).first()    #add unique brands in brands table
       if not brand :
             new=Brand(brand_name=data.brand)
             db.add(new)
