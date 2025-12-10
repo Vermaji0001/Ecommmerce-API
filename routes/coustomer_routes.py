@@ -1,7 +1,7 @@
 from fastapi import APIRouter,Depends,Query
 
 from sqlalchemy.orm import Session
-from controller.coustomer import coutomer_register,coustomer_login,sent_otp,reset_password_by_coustomer,show_all_category,show_all_brand,get_product_by_id,get_all_product_by_page,serach_product_by_name,add_to_cart,order_placed,order_cancel,create_profile_by_coustomer,change_coustomer_data,get_profile_by_coustomer,get_product_by_category,get_product_by_brand,get_order_by_coustomer,delete_coustomer,delete_add_to_cart
+from controller.coustomer import coutomer_register,coustomer_login,sent_otp,reset_password_by_coustomer,show_all_category,show_all_brand,get_product_by_id,get_all_product_by_page,serach_product_by_name,add_to_cart,order_placed,order_cancel,create_profile_by_coustomer,change_coustomer_data,get_profile_by_coustomer,get_product_by_category,get_product_by_brand,get_order_by_coustomer,delete_coustomer,delete_add_to_cart,sort_coustomer
 
 from schemas.coustomer_schemas import CoustomerRegisterSchemas,CoustomerLoginSchemas,OtpSentSchemas,ResetPasswordSchemas,AddToCartSchemas,OrderPlacedSchemas,OrderCancelSchemas,CoustomerProfileSchemas,ChangeCoustomerDataSchemas,GetCoustomerProfile,GetproductByCategory,GetproductByBrand,GetCoustomerOrder
 from utils.get_db import get_db
@@ -165,6 +165,15 @@ def coustomer_delete(id:int,db:Session=Depends(get_db)):
 def cart_delete(id:int,db:Session=Depends(get_db)):
     final=delete_add_to_cart(id,db)
     return final
+
+
+#sort price
+
+@router.get("/sort")
+def sort_data(pricetype:str=Query("asc"),db:Session=Depends(get_db)):
+    final=sort_coustomer(pricetype,db)
+    return final
+
       
 
 

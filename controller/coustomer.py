@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 import random
 from datetime import datetime,timedelta
+from sqlalchemy import asc,desc
 
 
 
@@ -332,3 +333,21 @@ def delete_add_to_cart(id,db:Session):
         return {"msg":"Delete Your Cart"}
     raise HTTPException (status_code=404,detail="Not Match your coustomer id ")
     
+
+
+
+
+
+
+#sort price
+def sort_coustomer(pricetype:str,db:Session):
+    query=db.query(Product)
+    if pricetype=="asc":
+            query=query.order_by(asc(Product.sale_price))
+    else:
+        if pricetype=="desc":
+            query=query.order_by(desc(Product.sale_price))
+        else:
+            return {"msg":"choose price type asc or desc"}    
+    user=query.all()
+    return user   
